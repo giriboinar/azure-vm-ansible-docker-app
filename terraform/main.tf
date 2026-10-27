@@ -74,11 +74,11 @@ resource "azurerm_network_interface_security_group_association" "main" {
 }
 
 resource "azurerm_linux_virtual_machine" "main" {
-  name                = "vm-service-health"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  size                = var.vm_size
-  admin_username      = var.admin_username
+  name                  = "vm-service-health"
+  location              = azurerm_resource_group.main.location
+  resource_group_name   = azurerm_resource_group.main.name
+  size                  = var.vm_size
+  admin_username        = var.admin_username
   network_interface_ids = [azurerm_network_interface.main.id]
 
   admin_ssh_key {
