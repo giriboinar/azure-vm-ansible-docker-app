@@ -59,6 +59,32 @@ uvicorn app.main:app --port 8000
 # or: docker compose up --build   (needs a Docker daemon)
 ```
 
+## Run from Docker Hub
+
+Published image: https://hub.docker.com/r/giriboinar/azure-vm-ansible-docker-app
+
+```bash
+docker pull giriboinar/azure-vm-ansible-docker-app:latest
+# or a fixed version:
+docker pull giriboinar/azure-vm-ansible-docker-app:v1.0.0
+
+docker run -d -p 8000:8000 --name service-health-api \
+  giriboinar/azure-vm-ansible-docker-app:latest
+curl http://localhost:8000/health
+```
+
+Tags: `latest`, `v1.0.0` (linux/amd64, 52.09 MB, first pushed 27 Oct 2026).
+Build it yourself (needs a Docker daemon):
+
+```bash
+docker build -t service-health-api:local .
+```
+
+The image is published by the CI `publish` job: on pushes to `main`, after
+the test and security jobs pass, it logs in to Docker Hub and pushes both
+tags. The publish job needs the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`
+repository secrets.
+
 ## Deploy to Azure (your account, your decision)
 
 ```bash
@@ -95,7 +121,9 @@ applying. No paid resource is created by CI or by cloning this repo.
 - `tests/test_main.py`: root, health, create/get, list, 404, delete,
   validation (422), metrics — run with `python -m pytest tests/ -q`.
 - CI additionally runs Trivy, `terraform fmt -check` + `validate`, an
-  Ansible syntax check, and a Docker image build (push disabled).
+  Ansible syntax check, and a Docker image build — plus a `publish` job
+  that pushes the image to Docker Hub on `main` after tests and security
+  pass (see "Run from Docker Hub").
 
 ## Limitations (honest)
 
