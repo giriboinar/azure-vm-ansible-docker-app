@@ -1,0 +1,45 @@
+---
+- name: Deploy Service Health API with Docker
+  hosts: webservers
+  become: true
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Docker and Compose plugin
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add deploy user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Start the app with Docker Compose
+      ansible.builtin.command:
+        cmd: docker compose up -d --build
+        chdir: "{{ app_dir | default('/opt/service-health-api') }}"
+      changed_when: true
+
+    - name: Wait for the API port
+      ansible.builtin.wait_for:
+        port: 8000
+        delay: 5
+        timeout: 120
+
+    - name: Check the health endpoint
+      ansible.builtin.uri:
+        url: http://localhost:8000/health
+        status_code: 200
